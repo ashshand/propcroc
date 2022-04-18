@@ -5,7 +5,7 @@ const { data } = require('autoprefixer');
 //const houses_json = [{"link":"/listings/1152636/3-paroo-avenue-eleebana-nsw-2282/"},{"link":"/listings/1152637/196-the-esplanade-speers-point-nsw-2284/"},{"link":"/listings/1152644/6-tea-tree-court-suffolk-park-nsw-2481/"},{"link":"/listings/1152630/34-myrna-road-strathfield-nsw-2135/"},{"link":"/listings/1152537/3-lipton-close-woodrising-nsw-2284/"},{"link":"/listings/1152598/104-north-creek-road-lennox-head-nsw-2478/"},{"link":"/listings/1152612/6-tanunda-close-eleebana-nsw-2282/"},{"link":"/listings/1152614/86-kemp-street-hamilton-south-nsw-2303/"},{"link":"/listings/1152618/19-crusade-close-valentine-nsw-2280/"}];
 const houses_json = [{"house_link":"https://www.ppdre.com.au/properties/2-79-81-dolphin-street-coogee-nsw/"},{"house_link":"https://www.ppdre.com.au/properties/6-15-bona-vista-avenue-maroubra-nsw-2/"}];
 
-//fs.unlinkSync("housessingleppd.json"); //deletes previous version
+fs.unlinkSync("housessingleppd.json"); //deletes previous version
 
 houses_json.forEach(function(item, i) {
     (async () => {
@@ -70,27 +70,28 @@ houses_json.forEach(function(item, i) {
             //the desc string has the title at the start, need to remove this 
             desc = desc.replace(title, "");
 
-            try { var water = await page.textContent(".content--wrap.clearfix > .features"); }
-            catch { var water = '';}
+            //try { var water = await page.textContent(".content--wrap.clearfix > .features"); }
+            //catch { var water = '';}
 
 
             
+
+            let listing = await page.textContent(".content--wrap.clearfix > .features");
+            desc = desc.replace(listing,"");
+
+
+            //let listing_array = listing.split("\t","\n")
+
+
+            //let landSizeLocation = listing_array.indexOf('Land Area'); 
+            //var landSize = " ";
+            //if (landSizeLocation>=0) {
+            //let landSizeLocationNum = landSizeLocation+1; //the number is located one after
+            //landSize=listing_array[landSizeLocationNum];
+
             
-            let listing = await page.locator(".content--wrap.clearfix > .features").innerText();;
-            let listing_array = listing.split("\t","\n")
+            //}
 
-            console.log(listing_array);
-
-            let landSizeLocation = listing_array.indexOf('Land Area'); 
-            var landSize = " ";
-            if (landSizeLocation>=0) {
-            let landSizeLocationNum = landSizeLocation+1; //the number is located one after
-            landSize=listing_array[landSizeLocationNum];
-
-            
-            }
-
-            console.log(landSize);
 
 
 
@@ -105,18 +106,17 @@ houses_json.forEach(function(item, i) {
             //}
 
 
-            let councilRatesLocation = listing_array.indexOf('Council Rates'); 
-            var councilRates = "";
-            if (councilRatesLocation>=0) {
-            let councilRatesLocationNum = councilRatesLocation+1; //the number is located one after
-            councilRates=listing_array[councilRatesLocationNum];
+           // let councilRatesLocation = listing_array.indexOf('Council Rates'); 
+            //var councilRates = "";
+            //if (councilRatesLocation>=0) {
+            //let councilRatesLocationNum = councilRatesLocation+1; //the number is located one after
+            //councilRates=listing_array[councilRatesLocationNum];
 
 
             //waterRates = waterRates.replace('Water Rates:\t', "");
             
-            }
+            //}
 
-            console.log(councilRates);
             //let landSize = await page.locator('div:right-of(:text("Land Size")) >> nth=0').textContent();
             //console.log(landSize);
 
@@ -137,14 +137,14 @@ houses_json.forEach(function(item, i) {
                 cars,
                 //water,
                 //land,
-                landSize,
+                //landSize,
                 //propExternal,
                 propType,
                 title,
                 desc,
                 guide,
-                water,
-                councilRates         
+                //water,
+                //councilRates         
             //Agent only works for first agent, Need an error code for if they don't have CAR SPOT, council and water - so if only have nth child 3 rows...Also may have home size, which sits ahead of land size;
                 
             });

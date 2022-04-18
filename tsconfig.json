@@ -31,7 +31,9 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx"
-  ]
+, "scraper.js/data_nswfiles.js"  ]
 }
 //paths not working
 /*this file needed for nextjs to recognise it as typescript */
+
+
