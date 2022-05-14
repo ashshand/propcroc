@@ -50,7 +50,7 @@ const fs = require("fs");
   await page.waitForTimeout(5000); //waits another 5 seconds to make sure everything loaded   
  
   const jsonData = JSON.stringify(write_data);
-  fs.writeFileSync("housesballard.json", jsonData);
+  fs.writeFileSync("house_links/housesballard.json", jsonData);
 
   await browser.close();
 

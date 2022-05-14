@@ -168,7 +168,7 @@ houses_json.forEach(function(item, i) {
         });
     
         let jsonData = JSON.stringify(data);
-        fs.appendFileSync("housessinglebresic.json", jsonData);
+        fs.appendFileSync("house_data/housessinglebresic.json", jsonData);
     
         //this inserts multiple rows and columns into supabase
         /*

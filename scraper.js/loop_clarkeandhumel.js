@@ -2,8 +2,13 @@
 const playwright = require('playwright');
 const fs = require("fs");
 const { data } = require('autoprefixer');
-//const houses_json = [{"link":"/listings/1152636/3-paroo-avenue-eleebana-nsw-2282/"},{"link":"/listings/1152637/196-the-esplanade-speers-point-nsw-2284/"},{"link":"/listings/1152644/6-tea-tree-court-suffolk-park-nsw-2481/"},{"link":"/listings/1152630/34-myrna-road-strathfield-nsw-2135/"},{"link":"/listings/1152537/3-lipton-close-woodrising-nsw-2284/"},{"link":"/listings/1152598/104-north-creek-road-lennox-head-nsw-2478/"},{"link":"/listings/1152612/6-tanunda-close-eleebana-nsw-2282/"},{"link":"/listings/1152614/86-kemp-street-hamilton-south-nsw-2303/"},{"link":"/listings/1152618/19-crusade-close-valentine-nsw-2280/"}];
-const houses_json = [{"house_link":"https://ballardproperty.com.au/9109157/1-1-latimer-road-bellevue-hill"},{"house_link":"https://ballardproperty.com.au/9064844/1-164-bellevue-road-bellevue-hill"},{"house_link":"https://ballardproperty.com.au/9109496/47-wassell-street-chifley"}];
+const houses_json = [{
+    "house_link": "/buying/for-sale/8-62-65-north-steyne/"
+},
+
+{
+    "house_link": "/buying/for-sale/10-ashburner-street/"
+}];
 
 houses_json.forEach(function(item, i) {
     (async () => {
@@ -12,37 +17,45 @@ houses_json.forEach(function(item, i) {
         });
         const page = await browser.newPage();
         let short_url = item.house_link;
-        let full_url = short_url;
+        let full_url = "https://www.clarkeandhumel.com.au"+short_url;
         await page.goto(full_url);
 
         let data = [];
 
-        let address = await page.textContent('span[itemprop="streetAddress"]');
-        console.log(address);
-        let suburb = await page.textContent('span[itemprop="addressLocality"]');
-        let postal = await page.textContent('span[itemprop="postalCode"]');
-        let agency = "Ballard Property";
-        //let agent = await page.textContent(".staff-name");
-        let agent = await page.locator('.agentName').allInnerTexts();
-        //let status = await page.textContent(".property-price > h6"); 
-        let beds = await page.textContent(".icon-bed");
-        let baths = await page.textContent(".icon-bath");
-        let desc = await page.textContent("article.container > .row > .column"); //includes title and description
+        let address = await page.textContent(".bg-secondary.pt-64.pb-24 .container .text-white.my-16 h1");
+        let suburb = await page.textContent(".bg-secondary.pt-64.pb-24 .container .row.text-white.my-32 .col-md-auto.mb-16.mr-4:nth-child(1) p");
+        //let postal = await page.textContent('span[itemprop="postalCode"]');
+        let agency = "Clarke & Humel";
+        //let agent = await page.textContent('.bg-gray-light > bg.primary > .row:nth-child(2) > .col-6 > .h6'); 
+        //console.log(agent);
+        //let beds = await page.textContent(".icon-content.bed > .icon-value");
+        //let baths = await page.textContent(".icon-content.bath > .icon-value");
         
-        try { var cars = await page.textContent('.icon-car'); }
-        catch { var cars = '';}
+        //ash old try { var desc = await page.locator(".property-section.property-description.ep1-clearfix > .entry-2-col.content-2.col.span_9.col_last > h2").allInnerTexts();} //includes title
+        //let desc = await page.locator(".property-section.property-description.epl-clearfix .entry-2-col.content-2.col.span_9.col_last").allInnerTexts(); //includes title
 
-        //let landSize = await page.locator('div:right-of(:text("Land Size")) >> nth=0').textContent();
-        //console.log(landSize);
+        
+        //let title = await page.textContent(".property-section.property-description.epl-clearfix .entry-2-col.content-2.col.span_9.col_last h2");
+        //console.log(title);
+
+        /*
+        if (desc && title) { //the desc string has the title at the start, need to remove this 
+            desc = desc.replace(title, "");
+        }
+        */
+        
+        /*try { var cars = await page.textContent('.icon-content.car > .icon-value'); }
+        catch { var cars = '';}
 
         var propType = "" 
         if(propType == 1) {
             //
         }
         else {
-            var propTypeSection = await page.textContent("article.container .icons"); //this section at bottom has text like Apartment or House next to the icons
+            var propTypeSection = await page.locator(".property-section.property-description.epl-clearfix .entry-2-col.content-2.col.span_9.col_last").allInnerTexts(); //this section at bottom has text like Apartment or House next to the icons
             let isApartment1 = (/\bapartment\b/gi).test(propTypeSection); 
             let isApartment2 = (/\bunit\b/gi).test(propTypeSection);
+            let isApartment3 = (/\bapartments\b/gi).test(propTypeSection);
             let isFreestanding = (/freestanding/gi).test(desc); //search main text
             let isAttached = (/attached\b/gi).test(desc);
             let isSemi = (/\bsemi\b/gi).test(desc);
@@ -54,13 +67,12 @@ houses_json.forEach(function(item, i) {
                 if(isTerrace && !isFreestanding) {propType = "Terrace"}
                 else {propType = "House"};
             };
-            if(isApartment1 || isApartment2) { propType = "Apartment"};
+            if(isApartment1 || isApartment2 || isApartment3) { propType = "Apartment"};
         }
 
 
-        try { var priceText = await page.textContent('#contentContainer .icons div'); } //will usually say Auction 2 April or For Sale Contact Agent. The second part is in a span class muted (ie the date or Contact Agent)
+        try { var priceText = await page.textContent('.property-meta.pricing'); } //will usually say Auction 2 April or For Sale Contact Agent. The second part is in a span class muted (ie the date or Contact Agent)
         catch { var priceText = '';}
-        console.log(priceText);
         //guide = guide.replace("Buyers guide ", "");
 
         //first see if it is a guide or a 'for sale' price
@@ -91,7 +103,6 @@ houses_json.forEach(function(item, i) {
         
         if(matches) {
             let matchesLength = matches.length;
-            console.log(matches);
             
             if(matchesLength == 1) {
                 priceMid = parseFloat(matches[0]);
@@ -115,36 +126,36 @@ houses_json.forEach(function(item, i) {
                     priceLower = priceLower * 1000;
                     priceUpper = priceUpper * 1000000;
                 }
-                
-                console.log(priceLower);
-                console.log(priceUpper);
+
                 priceMid = (priceUpper + priceLower)*0.5;
             }
         }
-        
+        */
         data.push({
-            address,
-            suburb,
-            agency,
-            agent,
+            //address,
+            //postal,
+            //suburb,
+            //agency,
+            //agent,
             //status,
-            beds,
-            baths,
-            cars,
-            desc,
+            //beds,
+            //baths,
+            //cars,
+            //title,
+            //desc,
             //water,
             //land,
             //propInternal,
             //propExternal,
-            propType,
-            priceMid,
-            priceType         
+            //propType,
+            //priceMid,
+            //priceType         
         //Agent only works for first agent, Need an error code for if they don't have CAR SPOT, council and water - so if only have nth child 3 rows...Also may have home size, which sits ahead of land size;
             
         });
     
         let jsonData = JSON.stringify(data);
-        fs.appendFileSync("house_data/housessingleballard.json", jsonData);
+        fs.appendFileSync("house_data/housessingleclarke.json", jsonData);
     
         //this inserts multiple rows and columns into supabase
         /*
@@ -168,6 +179,7 @@ houses_json.forEach(function(item, i) {
         /*
         const jsonData = JSON.stringify(content);
         fs.writeFileSync("houses.json", jsonData);
+
         */
         await browser.close();
     })();

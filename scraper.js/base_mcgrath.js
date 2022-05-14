@@ -60,7 +60,7 @@ const codes_check = [
     
  
   const jsonData = JSON.stringify(write_data);
-  fs.writeFileSync("housesmcgrath.json", jsonData);
+  fs.writeFileSync("house_links/housesmcgrath.json", jsonData);
 
   await browser.close();
 

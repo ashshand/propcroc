@@ -2,7 +2,7 @@
 const playwright = require('playwright');
 const fs = require("fs");
 const { data } = require('autoprefixer');
-const houses_json = [{"house_link":"https://lsre.com.au/property/apartment-nsw-schofields-1p0108/"},{"house_link":"https://lsre.com.au/property/villa-nsw-port-macquarie-0000476720/"},{"house_link":"https://lsre.com.au/land/nsw-marsden-park-1p0892/"},{"house_link":"https://lsre.com.au/property/unit-nsw-south-hurstville-0000475535/"},{"house_link":"https://lsre.com.au/property/apartment-nsw-miranda-1p3129/"},{"house_link":"https://lsre.com.au/property/house-nsw-avalon-beach-1p0226/"},{"house_link":"https://lsre.com.au/property/apartment-nsw-rockdale-0000474998/"}];
+const houses_json = [{"house_link":"https://lsre.com.au/property/apartment-nsw-schofields-1p0108/"},{"house_link":"https://lsre.com.au/property/apartment-nsw-miranda-1p3129/"},{"house_link":"https://lsre.com.au/property/house-nsw-avalon-beach-1p0226/"},{"house_link":"https://lsre.com.au/property/apartment-nsw-rockdale-0000474998/"}];
 
 houses_json.forEach(function(item, i) {
     (async () => {
@@ -17,29 +17,38 @@ houses_json.forEach(function(item, i) {
         let data = [];
 
         let address = await page.textContent('span[itemprop="streetAddress"]');
-        console.log(address);
         let suburb = await page.textContent('span[itemprop="addressLocality"]');
         let postal = await page.textContent('span[itemprop="postalCode"]');
         let agency = "Laing + Simmons";
         let agent = await page.locator('.author-info > h3').allInnerTexts(); 
-        let beds = await page.textContent(".icon-content-bed > .icon-value");
-        let baths = await page.textContent(".icon-bath");
-        let desc = await page.textContent("article.container > .row > .column"); //includes title and description
+        let beds = await page.textContent(".icon-content.bed > .icon-value");
+        let baths = await page.textContent(".icon-content.bath > .icon-value");
         
-        try { var cars = await page.textContent('.icon-car'); }
-        catch { var cars = '';}
+        //ash old try { var desc = await page.locator(".property-section.property-description.ep1-clearfix > .entry-2-col.content-2.col.span_9.col_last > h2").allInnerTexts();} //includes title
+        let desc = await page.locator(".property-section.property-description.epl-clearfix .entry-2-col.content-2.col.span_9.col_last").allInnerTexts(); //includes title
 
-        //let landSize = await page.locator('div:right-of(:text("Land Size")) >> nth=0').textContent();
-        //console.log(landSize);
+        
+        let title = await page.textContent(".property-section.property-description.epl-clearfix .entry-2-col.content-2.col.span_9.col_last h2");
+        console.log(title);
+
+        /*
+        if (desc && title) { //the desc string has the title at the start, need to remove this 
+            desc = desc.replace(title, "");
+        }
+        */
+        
+        try { var cars = await page.textContent('.icon-content.car > .icon-value'); }
+        catch { var cars = '';}
 
         var propType = "" 
         if(propType == 1) {
             //
         }
         else {
-            var propTypeSection = await page.textContent("article.container .icons"); //this section at bottom has text like Apartment or House next to the icons
+            var propTypeSection = await page.locator(".property-section.property-description.epl-clearfix .entry-2-col.content-2.col.span_9.col_last").allInnerTexts(); //this section at bottom has text like Apartment or House next to the icons
             let isApartment1 = (/\bapartment\b/gi).test(propTypeSection); 
             let isApartment2 = (/\bunit\b/gi).test(propTypeSection);
+            let isApartment3 = (/\bapartments\b/gi).test(propTypeSection);
             let isFreestanding = (/freestanding/gi).test(desc); //search main text
             let isAttached = (/attached\b/gi).test(desc);
             let isSemi = (/\bsemi\b/gi).test(desc);
@@ -51,13 +60,12 @@ houses_json.forEach(function(item, i) {
                 if(isTerrace && !isFreestanding) {propType = "Terrace"}
                 else {propType = "House"};
             };
-            if(isApartment1 || isApartment2) { propType = "Apartment"};
+            if(isApartment1 || isApartment2 || isApartment3) { propType = "Apartment"};
         }
 
 
-        try { var priceText = await page.textContent('#contentContainer .icons div'); } //will usually say Auction 2 April or For Sale Contact Agent. The second part is in a span class muted (ie the date or Contact Agent)
+        try { var priceText = await page.textContent('.property-meta.pricing'); } //will usually say Auction 2 April or For Sale Contact Agent. The second part is in a span class muted (ie the date or Contact Agent)
         catch { var priceText = '';}
-        console.log(priceText);
         //guide = guide.replace("Buyers guide ", "");
 
         //first see if it is a guide or a 'for sale' price
@@ -88,7 +96,6 @@ houses_json.forEach(function(item, i) {
         
         if(matches) {
             let matchesLength = matches.length;
-            console.log(matches);
             
             if(matchesLength == 1) {
                 priceMid = parseFloat(matches[0]);
@@ -112,15 +119,14 @@ houses_json.forEach(function(item, i) {
                     priceLower = priceLower * 1000;
                     priceUpper = priceUpper * 1000000;
                 }
-                
-                console.log(priceLower);
-                console.log(priceUpper);
+
                 priceMid = (priceUpper + priceLower)*0.5;
             }
         }
         
         data.push({
             address,
+            postal,
             suburb,
             agency,
             agent,
@@ -128,6 +134,7 @@ houses_json.forEach(function(item, i) {
             beds,
             baths,
             cars,
+            title,
             desc,
             //water,
             //land,
@@ -141,7 +148,7 @@ houses_json.forEach(function(item, i) {
         });
     
         let jsonData = JSON.stringify(data);
-        fs.appendFileSync("house_data/housessingleballard.json", jsonData);
+        fs.appendFileSync("house_data/housessinglelaing.json", jsonData);
     
         //this inserts multiple rows and columns into supabase
         /*
@@ -165,6 +172,7 @@ houses_json.forEach(function(item, i) {
         /*
         const jsonData = JSON.stringify(content);
         fs.writeFileSync("houses.json", jsonData);
+
         */
         await browser.close();
     })();

@@ -114,7 +114,7 @@ const fs = require("fs");
   */
  
   const jsonData = JSON.stringify(write_data);
-  fs.writeFileSync("housesbelle.json", jsonData);
+  fs.writeFileSync("house_links/housesbelle.json", jsonData);
 
   await browser.close();
 

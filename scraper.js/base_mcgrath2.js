@@ -76,7 +76,7 @@ const codes_check = [2000,2022,2030,2001,3000];
     
  
   const jsonData = JSON.stringify(write_data);
-  fs.writeFileSync("housesmcgrath.json", jsonData);
+  fs.writeFileSync("house_links/housesmcgrath.json", jsonData);
 
   await browser.close();
 

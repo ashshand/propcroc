@@ -59,7 +59,7 @@ const fs = require("fs");
       const loopThrough = await loopNextPages(1);
  
   const jsonData = JSON.stringify(write_data);
-  fs.writeFileSync("housesbresic.json", jsonData);
+  fs.writeFileSync("house_links/housesbresic.json", jsonData);
 
   await browser.close();
 

@@ -34,7 +34,7 @@ const fs = require("fs");
 
  
   const jsonData = JSON.stringify(write_data);
-  fs.writeFileSync("housesppd.json", jsonData);
+  fs.writeFileSync("house_links/housesppd.json", jsonData);
 
   await browser.close();
 

@@ -3,7 +3,7 @@ const playwright = require('playwright');
 const fs = require("fs");
 const { data } = require('autoprefixer');
 //const houses_json = [{"link":"/listings/1152636/3-paroo-avenue-eleebana-nsw-2282/"},{"link":"/listings/1152637/196-the-esplanade-speers-point-nsw-2284/"},{"link":"/listings/1152644/6-tea-tree-court-suffolk-park-nsw-2481/"},{"link":"/listings/1152630/34-myrna-road-strathfield-nsw-2135/"},{"link":"/listings/1152537/3-lipton-close-woodrising-nsw-2284/"},{"link":"/listings/1152598/104-north-creek-road-lennox-head-nsw-2478/"},{"link":"/listings/1152612/6-tanunda-close-eleebana-nsw-2282/"},{"link":"/listings/1152614/86-kemp-street-hamilton-south-nsw-2303/"},{"link":"/listings/1152618/19-crusade-close-valentine-nsw-2280/"}];
-const houses_json = [{"house_link":"https://ballardproperty.com.au/9109157/1-1-latimer-road-bellevue-hill"},{"house_link":"https://ballardproperty.com.au/9064844/1-164-bellevue-road-bellevue-hill"},{"house_link":"https://ballardproperty.com.au/9109496/47-wassell-street-chifley"}];
+const houses_json = [{"house_link":"https://www.century21.com.au/property/residential/buy/nsw/2090/cremorne-point/527400"}];
 
 houses_json.forEach(function(item, i) {
     (async () => {
@@ -17,19 +17,18 @@ houses_json.forEach(function(item, i) {
 
         let data = [];
 
-        let address = await page.textContent('span[itemprop="streetAddress"]');
-        console.log(address);
-        let suburb = await page.textContent('span[itemprop="addressLocality"]');
-        let postal = await page.textContent('span[itemprop="postalCode"]');
-        let agency = "Ballard Property";
-        //let agent = await page.textContent(".staff-name");
-        let agent = await page.locator('.agentName').allInnerTexts();
-        //let status = await page.textContent(".property-price > h6"); 
-        let beds = await page.textContent(".icon-bed");
-        let baths = await page.textContent(".icon-bath");
-        let desc = await page.textContent("article.container > .row > .column"); //includes title and description
+        let address = await page.textContent('span[class="streetaddress"]');
+        let suburb = await page.textContent('span[class="suburb block"]');
+        //let postal = await page.textContent('span[itemprop="postalCode"]');
+        let agency = "Century 21";
+        let agent = await page.locator(".agent > .name").allInnerTexts();
+        let status = await page.textContent('span[class="contracttext"]'); 
+        let beds = await page.textContent('div[class="icons"] > span:nth-child(1)');
+        let baths = await page.textContent('div[class="icons"] > span:nth-child(2)');
+        let desc = await page.textContent('div[class="contentRegion"]'); 
+        let title = await page.textContent('h3[class="title"]'); 
         
-        try { var cars = await page.textContent('.icon-car'); }
+        try { var cars = await page.textContent('div[class="icons"] > span:nth-child(3)'); }
         catch { var cars = '';}
 
         //let landSize = await page.locator('div:right-of(:text("Land Size")) >> nth=0').textContent();
@@ -40,13 +39,15 @@ houses_json.forEach(function(item, i) {
             //
         }
         else {
-            var propTypeSection = await page.textContent("article.container .icons"); //this section at bottom has text like Apartment or House next to the icons
+            var propTypeSection = await page.textContent('h3[class="title"]'); 
             let isApartment1 = (/\bapartment\b/gi).test(propTypeSection); 
             let isApartment2 = (/\bunit\b/gi).test(propTypeSection);
             let isFreestanding = (/freestanding/gi).test(desc); //search main text
+            let isApartment3 = (/\bapartment\b/gi).test(desc); 
             let isAttached = (/attached\b/gi).test(desc);
             let isSemi = (/\bsemi\b/gi).test(desc);
             let isHouse = (/\bhouse\b/gi).test(propTypeSection);
+            let isTownhouse = (/\btownhouse\b/gi).test(propTypeSection);
             let isHouseLike = (/house-/gi).test(desc); //to catch if they have 'house-sized or house-like' but it is really an apartment
             let isTerrace = (/\bterrace\b/gi).test(desc);
             let hasPool = (/\bpool\b/gi).test(desc); 
@@ -54,11 +55,12 @@ houses_json.forEach(function(item, i) {
                 if(isTerrace && !isFreestanding) {propType = "Terrace"}
                 else {propType = "House"};
             };
-            if(isApartment1 || isApartment2) { propType = "Apartment"};
+            if(isApartment1 || isApartment2 || isApartment3)  { propType = "Apartment"};
+            if(isTownhouse) { propType = "Townhouse"};
         }
 
 
-        try { var priceText = await page.textContent('#contentContainer .icons div'); } //will usually say Auction 2 April or For Sale Contact Agent. The second part is in a span class muted (ie the date or Contact Agent)
+        try { var priceText = await page.textContent('div[itemprop="pricetext"]'); } //will usually say Auction 2 April or For Sale Contact Agent. The second part is in a span class muted (ie the date or Contact Agent)
         catch { var priceText = '';}
         console.log(priceText);
         //guide = guide.replace("Buyers guide ", "");
@@ -127,11 +129,12 @@ houses_json.forEach(function(item, i) {
             suburb,
             agency,
             agent,
-            //status,
+            status,
             beds,
             baths,
             cars,
             desc,
+            title,
             //water,
             //land,
             //propInternal,
@@ -139,12 +142,11 @@ houses_json.forEach(function(item, i) {
             propType,
             priceMid,
             priceType         
-        //Agent only works for first agent, Need an error code for if they don't have CAR SPOT, council and water - so if only have nth child 3 rows...Also may have home size, which sits ahead of land size;
             
         });
     
         let jsonData = JSON.stringify(data);
-        fs.appendFileSync("house_data/housessingleballard.json", jsonData);
+        fs.appendFileSync("house_data/housessinglecentury.json", jsonData);
     
         //this inserts multiple rows and columns into supabase
         /*

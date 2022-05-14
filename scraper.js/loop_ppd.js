@@ -151,7 +151,7 @@ houses_json.forEach(function(item, i) {
         
             let jsonData = JSON.stringify(data);
             
-            fs.appendFileSync("housessingleppd.json", jsonData);
+            fs.appendFileSync("house_data/housessingleppd.json", jsonData);
         
          
             await browser.close();
